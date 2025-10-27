@@ -1,249 +1,80 @@
-﻿#include "iostream"
+#include "iostream"
 #include <string>
 #include <sstream>
 
 using namespace std;
 
-class Node {
-public:
+struct Node {
+	int value;
 	Node* next;
 	Node* prev;
-	int value;
-public:
-	Node(int data) {
-		next = prev = nullptr;
-		this->value = data;
-	}
-	Node() {
-		next = prev = nullptr;
-		value = 0;
-	}
 };
 
+Node* createNode(int value) {
+	Node* newNode = new Node;
+	newNode->value = value;
+	newNode->next = nullptr;
+	newNode->prev = nullptr;
+	return newNode;
+}
 
-class LinkedList {
-public:
-	Node* head;
-	Node* tail;
-	int size;
-public:
-	LinkedList() {
-		head = nullptr;
-		tail = nullptr;
-		size = 0;
+void addToFront(Node*& head, Node*& tail, int value) {
+	Node* newNode = createNode(value);
+	if (head == nullptr) {
+		head = tail = newNode;
 	}
-	~LinkedList() {
-		while (head) {
-			Node* temp = head;
-			head = head->next;
-			delete temp;
-		}
+	else {
+		newNode->next = head;
+		head->prev = newNode;
+		head = newNode;
 	}
+}
 
-	void appendFirstInd(int value) {
-		size++;
-		Node* temp = new Node(value);
-		if (head == nullptr) {
-			head = tail = temp;
-		}
-		else {
-			temp->next = head;
-			head->prev = temp;
-			head = temp;
-		}
+void addToBack(Node*& head, Node*& tail, int value) {
+	Node* newNode = createNode(value);
+	if (tail == nullptr) {
+		head = tail = newNode;
 	}
-
-	void appendLastInd(int value) {
-		size++;
-		Node* temp = new Node(value);
-		if (tail == nullptr) {
-			head = tail = temp;
-		}
-		else {
-			temp->prev = tail;
-			tail->next = temp;
-			tail = temp;
-		}
+	else {
+		tail->next = newNode;
+		newNode->prev = tail;
+		tail = newNode;
 	}
+}
 
-	void append(int index, int value) {
-		Node* temp = new Node(value);
-		while (index > size || index < 0) {
-			cout << "Индекс либо больше размера массива, либо меньше нуля, попробуйте снова: ";
-			cin >> index;
-		}
-
-		if (index == size) {
-			delete temp;
-			appendLastInd(value);
-			return;
-		}
-		if (!index) {
-			delete temp;
-			appendFirstInd(value);
-			return;
-		}
-		if (size / 2 > index) {
-			Node* curr = head;
-			for (int i = 0; i < index - 1; i++) {
-				curr = curr->next;
-			}
-			temp->prev = curr;
-			temp->next = curr->next;
-			curr->next->prev = temp;
-			curr->next = temp;
-		}
-		else {
-			Node* curr = tail;
-			for (int i = 0; i < size - index - 1; i++) {
-				curr = curr->prev;
-			}
-			curr->prev->next = temp;
-			temp->next = curr;
-			temp->prev = curr->prev;
-			curr->prev = temp;
-		}
-		size++;
+void printList(Node* head) {
+	Node* current = head;
+	while (current != nullptr) {
+		cout << current->value << " ";
+		current = current->next;
 	}
+	cout << endl;
+}
 
-	void showList() {
-		Node* temp = head;
-		while (temp) {
-			cout << temp->value << " ";
-			temp = temp->next;
-		}
+void deleteList(Node*& head, Node*& tail) {
+	Node* current = head;
+	while (current != nullptr) {
+		Node* temp = current;
+		current = current->next;
+		delete temp;
 	}
+	head = tail = nullptr;
+}
 
-	Node* findElement(int index) {
-		while (index >= size || index < 0) {
-			cout << "Индекс либо больше размера массива, либо меньше нуля, попробуйте снова: ";
-			cin >> index;
-		}
-		Node* temp = head;
-		while (index--) {
-			temp = temp->next;
-		}
-		return temp;
+int* createArray(int size) {
+	return new int[size];
+}
+
+void deleteArray(int* arr) {
+	delete[] arr;
+}
+
+void printArray(int* arr, int size) {
+	for (int i = 0; i < size; i++) {
+		cout << arr[i] << " ";
 	}
-
-	void remove(int index) {
-		while (index >= size || index < 0) {
-			cout << "Индекс либо больше размера массива, либо меньше нуля, попробуйте снова: ";
-			cin >> index;
-		}
-		if (!index) {
-			Node* temp = head->next;
-			if (temp == nullptr) {
-				tail = nullptr;
-			}
-			else {
-				temp->prev = nullptr;
-			}
-			delete head;
-			head = temp;
-		}
-		else {
-			Node* prev = findElement(index - 1);
-			Node* temp = prev->next;
-			prev->next = temp->next;
-			if (temp->next != nullptr) {
-				temp->next->prev = prev;
-				delete temp;
-			}
-			else {
-				tail = prev;
-				delete temp;
-			}
-		}
-		size--;
-	}
-
-};
-
-class DynamicArray {
-public:
-	int* data;
-	int size;
-	int capacity;
-
-public:
-	DynamicArray(int capacity) {
-		this->capacity = capacity;
-		data = new int[capacity];
-		this->size = 0;
-	}
-	~DynamicArray() {
-		delete[] data;
-	}
-	void resize(int newSize) {
-		int* temp = new int[newSize];
-		for (int i = 0; i < size; i++) {
-			temp[i] = data[i];
-		}
-		for (int i = size; i < newSize; i++) {
-			temp[i] = 0;
-		}
-		this->size = newSize;
-		this->capacity = newSize;
-		delete[] data;
-		this->data = temp;
-	}
-
-	void reverse() {
-		int* temp = new int[capacity * 2];
-		for (int i = 0; i < size; i++) {
-			temp[i] = data[i];
-		}
-		delete[] data;
-		this->capacity *= 2;
-		this->data = temp;
-	}
-
-	void reverse(int capacity) {
-		int* temp = new int[capacity];
-		for (int i = 0; i < size; i++) {
-			temp[i] = data[i];
-		}
-		delete[] data;
-		this->capacity = capacity;
-		this->data = temp;
-	}
-
-
-	void remove(int index) {
-		while (index >= size || index < 0) {
-			cout << "Индекс либо больше размера массива, либо меньше нуля, попробуйте снова: ";
-			cin >> index;
-		}
-		for (int i = index; i < size - 1; i++) {
-			data[i] = data[i + 1];
-		}
-		size--;
-	}
-
-	void insert(int index, int value) {
-		while (index > size || index < 0) {
-			cout << "Индекс либо больше размера массива, либо меньше нуля, попробуйте снова: ";
-			cin >> index;
-		}
-		if (size == capacity) {
-			reverse();
-		}
-		for (int i = size; i > index; i--) {
-			data[i] = data[i - 1];
-		}
-		data[index] = value;
-		size++;
-
-	}
-
-	int& operator[](int index) {
-		if (index < 0 || index >= size) {
-			throw std::out_of_range("Индекс либо больше размера массива, либо меньше нуля");
-		}
-		return data[index];
-	}
-};
+	cout << endl;
+}
 
 template <typename T>
 class StackNode {
@@ -395,4 +226,5 @@ int main() {
 	string reversePolNotation = marshallingYarD(expression);
 	cout << "Обратная польская нотация: " << reversePolNotation << endl;
 }
+
 
